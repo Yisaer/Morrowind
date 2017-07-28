@@ -1,4 +1,4 @@
-package com.yisa.wind.util.pack;
+package com.yisa.morrowind.util.pack;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

@@ -1,6 +1,4 @@
-package com.yisa.wind.util.pack;
-
-import com.sun.javafx.tools.packager.PackagerException;
+package com.yisa.morrowind.util.pack;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.BufferOverflowException;

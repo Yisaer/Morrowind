@@ -1,4 +1,4 @@
-package com.yisa.wind.util;
+package com.yisa.morrowind.util;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 /**
  * Created by Yisa on 2017/7/27.
  */
-public class PacketUtils {
+public class PackageUtils {
 
     public final static List<String> EMPTY_LIST =
             new ArrayList<String>(0);

@@ -1,7 +1,7 @@
-package com.yisa.wind.util;
+package com.yisa.morrowind.util;
 
-import com.yisa.wind.AppConfig;
-import com.yisa.wind.EnvEnum;
+import com.yisa.morrowind.AppConfig;
+import com.yisa.morrowind.EnvEnum;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.HashMap;

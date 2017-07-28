@@ -1,4 +1,4 @@
-package com.yisa.wind;
+package com.yisa.morrowind;
 
 import org.aeonbits.owner.Config;
 
@@ -19,7 +19,7 @@ public interface AppConfig extends Config{
     boolean soKeepAlive();
 
     @Key("common.package")
-    @DefaultValue("com.yisa.wind")
+    @DefaultValue("com.yisa.morrowind")
     String getPackageName();
 
     /**

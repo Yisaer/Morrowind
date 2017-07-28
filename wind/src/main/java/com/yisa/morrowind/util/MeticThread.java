@@ -1,4 +1,4 @@
-package com.yisa.wind.util;
+package com.yisa.morrowind.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
