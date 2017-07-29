@@ -1,19 +1,27 @@
 package com.yisa.morrowind.core;
 
+
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * Created by Yisa on 2017/7/28.
+ * 方法执行类
+ * User: Dempe
+ * Date: 2015/11/4
+ * Time: 10:06
+ * To change this template use File | Settings | File Templates.
  */
 public class MethodInvoker {
 
-    public static Object interceptorInvoker(ActionMethod actionMethod,
-                    Object[] paramterValues) throws InvocationTargetException,IllegalAccessException{
 
-        //TODO
-        // 拦截器速率限定
+    public static Object interceptorInvoker(ActionMethod actionMethod, Object[] parameterValues)
+            throws InvocationTargetException, IllegalAccessException {
 
-        Object result = actionMethod.call(paramterValues);
+        // 速率限定
+
+        // 拦截器前
+
+        Object result = actionMethod.call(parameterValues);
+
         return result;
     }
 }

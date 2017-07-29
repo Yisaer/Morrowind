@@ -11,21 +11,18 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by Yisa on 2017/7/28.
+ * Created with IntelliJ IDEA.
+ * User: Dempe
+ * Date: 2015/11/3
+ * Time: 14:39
+ * To change this template use File | Settings | File Templates.
  */
 public class MethodParam {
 
-
     private final static Map<Method, String[]> paramCacheMap = new ConcurrentHashMap<Method, String[]>();
 
-    /**
-     *
-     * 从方法参数中获取名称
-     *
-     * @param method
-     * @return
-     */
     public static String[] getParameterNames(Method method) {
+        // 方法参数名称缓存中获取
         String[] parameterNames = paramCacheMap.get(method);
         if (parameterNames == null) {
             parameterNames = new LocalVariableTableParameterNameDiscoverer().getParameterNames(method);
@@ -41,9 +38,6 @@ public class MethodParam {
                 }
             }
             // set cache
-            /**
-             * 将参数名称映射到对应方法中
-             */
             paramCacheMap.put(method, parameterNames);
         }
         return parameterNames;
@@ -76,5 +70,6 @@ public class MethodParam {
         }
         return paramTarget;
     }
+
 
 }

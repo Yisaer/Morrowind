@@ -8,13 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.Callable;
 
 /**
- * Created by Yisa on 2017/7/28.
+ * 业务处理线程类
+ * User: Dempe
+ * Date: 2015/12/11
+ * Time: 10:01
+ * To change this template use File | Settings | File Templates.
  */
-public class TaskWorker implements  Runnable {
-
+public class TaskWorker implements Runnable {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(TaskWorker.class);
 
@@ -22,7 +24,7 @@ public class TaskWorker implements  Runnable {
     private ServerContext context;
     private Request request;
 
-
+//    private static MetricThread metricThread = new MetricThread("write");
 
     public TaskWorker(ChannelHandlerContext ctx, ServerContext context, Request request) {
         this.ctx = ctx;
@@ -30,41 +32,39 @@ public class TaskWorker implements  Runnable {
         this.request = request;
     }
 
+
     public void run() {
-
-
         try {
-            context.setLocalContext(request,ctx);
+            // set执行上下文环境
+            context.setLocalContext(request, ctx);
             ActionTake tack = new ActionTake(context);
             final IDResponse act = tack.act(request);
-
-            /**
-             * 这里无需显式的释放,writeandFlush已经release msg.
-             */
-            if(act != null ){
+            if (act != null) {
+                // 写入的时候已经release msg 无需显示的释放
+//                LOGGER.info("act:{}", act.toString());
+                // 无需显示调用netty io现成提交任务，ctx.writeAndFlush方法已经做好了封装
                 ctx.writeAndFlush(act);
-            }
-            else{
-                /**
-                 * 通过引用计数器释放
-                 */
+//                ctx.executor().submit(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        ctx.writeAndFlush(act);
+//                    }
+//                });
+
+//                metricThread.increment();
+            } else {
                 ReferenceCountUtil.release(act);
             }
-
-
-
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         } catch (InstantiationException e) {
-            e.printStackTrace();
-        }finally {
-            /**
-             * 当执行完毕后移除当前上下文
-             */
+            LOGGER.error(e.getMessage(), e);
+        } finally {
+            // remove执行上下文环境
             context.removeLocalContext();
         }
 

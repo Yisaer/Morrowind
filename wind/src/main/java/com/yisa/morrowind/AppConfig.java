@@ -9,7 +9,7 @@ import org.aeonbits.owner.Config;
 public interface AppConfig extends Config{
 
     @Key("port")
-    @DefaultValue("8888")
+    @DefaultValue("12345")
     int port();
 
     @DefaultValue("true")
@@ -31,6 +31,6 @@ public interface AppConfig extends Config{
     String env();
 
     @Key("servers.${env}.appId")
-    @DefaultValue("30001")
+    @DefaultValue("34445")
     int appId();
 }

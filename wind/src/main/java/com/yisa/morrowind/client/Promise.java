@@ -5,14 +5,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Created by Yisa on 2017/7/29.
+ * Created with IntelliJ IDEA.
+ * User: Dempe
+ * Date: 2016/3/9
+ * Time: 10:57
+ * To change this template use File | Settings | File Templates.
  */
-public class Promise<T> implements Callback<T> , Future<T> {
+public class Promise<T> implements Callback<T>, Future<T> {
 
     private final CountDownLatch latch = new CountDownLatch(1);
     Throwable error;
     private T message;
-
 
     public void onReceive(T message) {
         synchronized (this) {
@@ -21,6 +24,8 @@ public class Promise<T> implements Callback<T> , Future<T> {
         }
 
     }
+
+
     public T await(long amount, TimeUnit unit) throws Exception {
         if (latch.await(amount, unit)) {
             return get();
@@ -28,7 +33,6 @@ public class Promise<T> implements Callback<T> , Future<T> {
             throw new TimeoutException();
         }
     }
-
 
     public T await() throws Exception {
         latch.await();
@@ -51,4 +55,6 @@ public class Promise<T> implements Callback<T> , Future<T> {
         }
         return message;
     }
+
+
 }

@@ -1,5 +1,6 @@
 package com.yisa.morrowind.client;
 
+
 import com.yisa.morrowind.codec.IDMessageDecoder;
 import com.yisa.morrowind.codec.MarshallableEncoder;
 import com.yisa.morrowind.proto.IDMessage;
@@ -21,9 +22,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by Yisa on 2017/7/29.
+ * TODO【严重】 消息发送超时情况，contextMap内上下文对象无法清除，存在内存溢出的风险 待添加定时任务，定期清除超时的contextMap，
+ *
+ * User: Dempe
+ * Date: 2015/12/11
+ * Time: 17:42
+ * To change this template use File | Settings | File Templates.
  */
-public class CommonClient implements Client{
+public class CommonClient implements Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonClient.class);
 
@@ -38,80 +44,10 @@ public class CommonClient implements Client{
     private int port;
     private int nextMessageId = 1;
 
-
-    public CommonClient(String host, int port) {
+    public CommonClient(String host, int port) throws InterruptedException {
         this.host = host;
         this.port = port;
-
         init();
-    }
-
-    private void init() {
-
-        b = new Bootstrap();
-        group = new NioEventLoopGroup(4);
-        executorGroup = new DefaultEventExecutorGroup(4,
-                new DefaultThreadFactory("worker group"));
-        b.group(group)
-                .option(ChannelOption.ALLOCATOR.TCP_NODELAY,true)
-                .option(ChannelOption.SO_KEEPALIVE,true)
-                .channel(NioSocketChannel.class)
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        initClientChannel(socketChannel);
-                    }
-                });
-
-        channelPool = new ChannelPool(this);
-    }
-
-
-    public void initClientChannel(SocketChannel ch){
-        ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast("RequestEncoder",new MarshallableEncoder())
-                .addLast("ResponseDecoder",new IDMessageDecoder())
-                .addLast("ClientHandler",new ChannelHandlerAdapter(){
-                    @Override
-                    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                        Integer id = 0;
-                        IDMessage message = (IDMessage) msg;
-                        id = message.getMessageID();
-                        byte[] bytes = message.getBytes();
-                        Unpack unpack = new Unpack(bytes);
-                        Response resp = new Response();
-                        resp.unmarshal(unpack);
-                        Context context = contextMap.remove(id);
-                        if( context == null){
-                            LOGGER.debug("messageID:{} , take Context null",id);
-                            return;
-                        }
-                        context.callback.onReceive(resp);
-                    }
-                });
-    }
-
-
-
-
-
-    public ChannelFuture connect(){
-        return b.connect(host,port);
-    }
-
-
-    public ChannelFuture connect (final String host , final int port){
-        ChannelFuture f = null;
-
-        try {
-            f = b.connect(host,port).sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return f;
-    }
-
-    public void sendOnly(Request request) throws Exception {
-        writeAndFlush(request);
     }
 
     private int getNextMessageId() {
@@ -122,54 +58,120 @@ public class CommonClient implements Client{
         }
         return rc;
     }
+
+    private void init() throws InterruptedException {
+        b = new Bootstrap();
+        group = new NioEventLoopGroup(4);
+        executorGroup = new DefaultEventExecutorGroup(4,
+                new DefaultThreadFactory("worker group"));
+        b.group(group)
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .channel(NioSocketChannel.class)
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        initClientChannel(ch);
+                    }
+                });
+
+        channelPool = new ChannelPool(this);
+    }
+
+
+
+
+    public void initClientChannel(SocketChannel ch) {
+        ChannelPipeline pipeline = ch.pipeline();
+        pipeline.addLast("RequestEncoder", new MarshallableEncoder())
+                .addLast("ResponseDecoder", new IDMessageDecoder())
+                .addLast("ClientHandler", new ChannelHandlerAdapter() {
+                    @Override
+                    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                        Integer id = 0;
+                        IDMessage message = (IDMessage) msg;
+                        id = message.getMessageID();
+                        byte[] bytes = message.getBytes();
+                        Unpack unpack = new Unpack(bytes);
+                        Response resp = new Response();
+                        resp.unmarshal(unpack);
+                        Context context = contextMap.remove(id);
+                        if (context == null) {
+                            LOGGER.debug("messageID:{}, take Context null", id);
+                            return;
+                        }
+                        context.cb.onReceive(resp);
+                    }
+                });
+    }
+
+
+
+    public ChannelFuture connect() {
+        return b.connect(host, port);
+
+    }
+
+    public ChannelFuture connect(final String host, final int port) {
+        ChannelFuture f = null;
+        try {
+            f = b.connect(host, port).sync();
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return f;
+    }
+
+    public void sendOnly(Request request) throws Exception {
+        writeAndFlush(request);
+    }
+
     /**
-     * 发送消息, 并获取Reponse
+     * 发送消息，并等待Response
+     *
      * @param request
-     * @param callback
-     * @return
-     * @throws Exception
+     * @return Response
      */
     public Callback call(Request request, Callback callback) throws Exception {
         int id = getNextMessageId();
         request.setMessageID(id);
-        Context context = new Context(request ,callback,id);
-        contextMap.put(id,context);
+        Context context = new Context(id, request, callback);
+        contextMap.put(id, context);
         writeAndFlush(request);
         return callback;
-
     }
 
     public Future<Response> send(Request request) throws Exception {
         Promise<Response> future = new Promise<Response>();
-        call(request,future);
+        call(request, future);
         return future;
     }
 
-    public Response sendAndWait(Request request) throws Exception {
+    public Response sendAnWait(Request request) throws Exception {
         Future<Response> future = send(request);
         return future.await();
     }
 
-    public Response sendAndWait(Request request, long amount, TimeUnit unit) throws Exception {
+    public Response sendAnWait(Request request, long amount, TimeUnit unit) throws Exception {
         Future<Response> future = send(request);
-        return future.await(amount,unit);
+        return future.await(amount, unit);
     }
 
-    public void writeAndFlush(Object object) throws Exception{
+    public void writeAndFlush(Object request) throws Exception {
         Connection connection = channelPool.getChannel();
-        connection.doTransport(object);
+        connection.doTransport(request);
     }
 
-
-    public static class Context{
+    public static class Context {
         final Request request;
-        final Callback callback;
+        final Callback cb;
         private final short id;
 
-        public Context(Request request, Callback callback, int id) {
+        Context(int id, Request request, Callback cb) {
+            this.id = (short) id;
+            this.cb = cb;
             this.request = request;
-            this.callback = callback;
-            this.id = (short)id;
         }
     }
+
 }

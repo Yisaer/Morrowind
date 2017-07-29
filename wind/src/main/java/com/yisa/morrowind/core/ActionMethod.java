@@ -1,20 +1,23 @@
 package com.yisa.morrowind.core;
 
-/**
- * Created by Yisa on 2017/7/28.
- */
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+
 /**
- *  ActionMethod对应Controller中某个@Path下的方法
+ * action方法类
+ * User: Dempe
+ * Date: 2015/10/15
+ * Time: 16:19
+ * To change this template use File | Settings | File Templates.
  */
 public class ActionMethod {
 
     private Object target;
 
     private Method method;
+
 
     /**
      * @param target
@@ -25,14 +28,6 @@ public class ActionMethod {
         this.method = method;
     }
 
-
-    /**
-     * 根据参数 ,调用目标对象方法
-     * @param args
-     * @return
-     * @throws InvocationTargetException
-     * @throws IllegalAccessException
-     */
     public Object call(Object... args) throws InvocationTargetException, IllegalAccessException {
         return method.invoke(target, args);
     }

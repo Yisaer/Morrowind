@@ -1,8 +1,5 @@
 package com.yisa.morrowind.core;
 
-/**
- * Created by Yisa on 2017/7/28.
- */
 
 import com.yisa.morrowind.AppConfig;
 import com.yisa.morrowind.proto.Request;
@@ -10,10 +7,13 @@ import io.netty.channel.ChannelHandlerContext;
 import org.springframework.context.ApplicationContext;
 
 /**
- * 进程上下文执行环境
+ * 进程执行上下文环境
+ * User: zhengdaxia
+ * Date: 15/10/17
+ * Time: 上午10:45
+ * To change this template use File | Settings | File Templates.
  */
 public class ServerContext {
-
 
     static final ThreadLocal<Context> localContext = new ThreadLocal<Context>();
     public RequestMapping mapping;
@@ -25,6 +25,7 @@ public class ServerContext {
         this.config = config;
         this.context = context;
         this.mapping = new RequestMapping(config, context);
+
     }
 
     /**
@@ -65,22 +66,22 @@ public class ServerContext {
         return mapping.tack(uri);
     }
 
+    static class Context {
 
-
-    static class Context{
         final Request request;
+
         final ChannelHandlerContext response;
 
-        Context(Request request , ChannelHandlerContext response){
+        Context(Request request, ChannelHandlerContext response) {
             this.request = request;
             this.response = response;
         }
 
-        public Request getRequest() {
+        Request getRequest() {
             return request;
         }
 
-        public ChannelHandlerContext getResponse() {
+        ChannelHandlerContext getResponse() {
             return response;
         }
     }

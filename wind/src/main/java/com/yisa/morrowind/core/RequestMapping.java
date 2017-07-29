@@ -1,8 +1,5 @@
 package com.yisa.morrowind.core;
 
-/**
- * Created by Yisa on 2017/7/28.
- */
 
 import com.yisa.morrowind.AppConfig;
 import com.yisa.morrowind.Path;
@@ -21,7 +18,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 路由消息映射
+ * 消息路由映射
+ * 根据controller name&path name映射成对应uri
+ * User: zhengdaxia
+ * Date: 15/10/17
+ * Time: 上午10:41
+ * To change this template use File | Settings | File Templates.
  */
 public class RequestMapping {
 
@@ -98,28 +100,16 @@ public class RequestMapping {
         LOGGER.info("Handles  Initialization successfully");
     }
 
-
-    /**
-     * 根据uri获取这个uri请求的所对应的执行目标方法
-     * @param uri
-     * @return
-     */
     public ActionMethod tack(String uri) {
         return mapping.get(uri);
     }
 
 
-    /**
-     * 关闭安全检查
-     * @param method
-     */
     protected void makeAccessible(Method method) {
         if ((!Modifier.isPublic(method.getModifiers()) || !Modifier.isPublic(method.getDeclaringClass().getModifiers()))
                 && !method.isAccessible()) {
             method.setAccessible(true);
         }
     }
-
-
 
 }

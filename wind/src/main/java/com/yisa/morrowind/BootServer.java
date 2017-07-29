@@ -9,7 +9,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
@@ -24,7 +23,7 @@ import org.springframework.context.ApplicationContext;
 public class BootServer implements Server{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BootServer.class);
-    ApplicationContext context;
+    private ApplicationContext context;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private ServerBootstrap b;
@@ -36,7 +35,7 @@ public class BootServer implements Server{
     public BootServer(ApplicationContext context, AppConfig config) {
         this.context = context;
         this.config = config;
-        Servercontext = new ServerContext(config,context);
+        Servercontext = new ServerContext(config,this.context);
         init();
     }
 

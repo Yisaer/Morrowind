@@ -11,14 +11,13 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
- * Created by Yisa on 2017/7/28.
+ * 业务处理快照类
+ * User: Dempe
+ * Date: 2015/11/4
+ * Time: 10:17
+ * To change this template use File | Settings | File Templates.
  */
-
-/**
- * 给一个request, 获取request的id生成IDresponse
- */
-
-public class ActionTake implements Take<Request, IDResponse>{
+public class ActionTake implements Take<Request, IDResponse> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ActionTake.class);
 
@@ -31,53 +30,46 @@ public class ActionTake implements Take<Request, IDResponse>{
 
     /**
      * 一个request获取一个response
-     * @param request
-     * @return
+     *
+     * @param request 请求消息
+     * @return Response 返回消息
      * @throws InvocationTargetException
      * @throws IllegalAccessException
-     * @throws ClassNotFoundException
-     * @throws InstantiationException
      */
-    public IDResponse act(Request request) throws InvocationTargetException, IllegalAccessException, ClassNotFoundException, InstantiationException {
+    public IDResponse act(Request request) throws InvocationTargetException, IllegalAccessException,
+            ClassNotFoundException, InstantiationException {
         String uri = request.getUri();
-        if(StringUtils.isBlank(uri)){
+        if (StringUtils.isBlank(uri)) {
             LOGGER.warn("[dispatcher]:jsonURI is blank");
             return null;
         }
-        /**
-         * 通过Request 的Path找到了Controller下对应的Method
-         */
+        // 通过Request uri找到对应的ActionMethod
         ActionMethod actionMethod = context.tackAction(uri);
-        if(actionMethod == null){
-            LOGGER.warn("[dispatcher]: not find jsonURI {}",uri);
+        if (actionMethod == null) {
+            LOGGER.warn("[dispatcher]:not find jsonURI {}", uri);
             return null;
         }
         Method method = actionMethod.getMethod();
-        /**
-         * 获取方法参数
-         */
+        // 获取方法参数
         String[] parameterNames = MethodParam.getParameterNames(method);
-        Map<String,String> paramMap = request.getParamMap();
-        /**
-         * 获取方法执行的参数的值
-         */
-        Object [] parameterValues =
-                MethodParam.getParameterValues(parameterNames,method,paramMap);
-        Object result = MethodInvoker.interceptorInvoker(actionMethod,parameterValues);
-
-        if(request == null){
-            LOGGER.debug("actionMethod:{} return void." ,actionMethod);
-
+        Map<String, String> paramMap = request.getParamMap();
+        // 获取方法执行参数值
+        Object[] parameterValues = MethodParam.getParameterValues(parameterNames, method, paramMap);
+        Object result = MethodInvoker.interceptorInvoker(actionMethod, parameterValues);
+        if (result == null) {
+            // 当action method 返回是void的时候，不返回任何消息
+            LOGGER.debug("actionMethod:{} return void.", actionMethod);
             return null;
         }
         int id = request.getMessageID();
-        return buildResp(id,result);
+        return buildResp(id, result);
+
 
     }
 
-
     /**
      * 封装返回消息
+     *
      * @param id
      * @param result
      * @return
@@ -90,4 +82,6 @@ public class ActionTake implements Take<Request, IDResponse>{
         resp.setData(result.toString());
         return resp;
     }
+
+
 }
